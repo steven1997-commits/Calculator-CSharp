@@ -61,6 +61,9 @@ namespace Calculator
             } else if (op.Equals("+") || op.Equals("-"))
             {
                 return 1;
+            } else if (op.Equals("^"))
+            {
+                return 3;
             }
             return 0;
         }
@@ -98,6 +101,8 @@ namespace Calculator
                     return num1 * num2;
                 case "/":
                     return num1 / num2;
+                case "^":
+                    return Math.Pow(num1,num2);
                 default:
                     return 0;
             }

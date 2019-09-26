@@ -100,11 +100,30 @@ namespace Calculator
 
         public static bool isOperator(string term)
         {
-            if (term.Equals("+") || term.Equals("-") || term.Equals("*") || term.Equals("/"))
+            if (term.Equals("+") 
+                || term.Equals("-") 
+                || term.Equals("*") 
+                || term.Equals("/")
+                || term.Equals("^"))
             {
                 return true;
             }
             return false;
+        }
+
+        private void Add_Operator(string op)
+        {
+            if (Calculator.isOperator(this.currTerm))
+            {
+                this.currTerm = op;
+                textBox1.Text = 
+                    textBox1.Text.Substring(0, textBox1.Text.Length - 3) + " " + op + " ";
+            } else if (this.currTerm.Length > 0)
+            {
+                this.infixQueue.push(this.currTerm);
+                this.currTerm = op;
+                textBox1.Text += " " + op + " ";
+            }
         }
 
         private void ButtonAdd_Click(object sender, EventArgs e)
@@ -201,6 +220,21 @@ namespace Calculator
                 this.currTerm = res.ToString();
             }
             
+        }
+
+        private void ButtonExp_Click(object sender, EventArgs e)
+        {
+            Add_Operator("^");
+        }
+
+        private void ButtonLeftBracket_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ButtonRightBracket_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
