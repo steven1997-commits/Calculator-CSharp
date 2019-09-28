@@ -13,55 +13,117 @@ namespace Calculator
 
         private Queue<string> postfix;
         private Stack<string> myStack;
+        private string currentNumber;
 
         public Postfix()
         {
             this.postfix = new Queue<string>();
             this.myStack = new Stack<string>();
+            this.currentNumber = string.Empty;
         }
 
-        public void buildFromInfix(Infix infix)
+        public void buildFromInfix(string infix)
         {
-            infix.printDebug();
-            while(!infix.isEmpty())
+            string expression = infix + ")";
+            int len = expression.Length;
+            myStack.Push("(");
+            for (int i=0;i<len;i++)
             {
-                string term = infix.pop();
-                if (Calculator.isOperator(term))
+                char currChar = expression[i];
+                processChar(currChar);
+            }
+            EnqueueCurrentNumber();
+        }
+
+        //wrap this in a try catch later to check for empty stack exception
+        private void processChar(char term)
+        {
+            if (IsOperator(term))
+            {
+                EnqueueCurrentNumber();
+                string x = myStack.Pop();
+                while (IsOperator(x[0]) && precedence(x[0]) >= precedence(term))
                 {
-                    while (this.myStack.Count > 0)
-                    {
-                        //exit loop if precedence lower
-                        string prevOp = this.myStack.Pop();
-                        if (precedence(prevOp) < precedence(term))
-                        {
-                            this.myStack.Push(prevOp);
-                            break;
-                        }
-                        this.postfix.Enqueue(prevOp);
-                    }
-                    this.myStack.Push(term);
-                } else
+                    postfix.Enqueue(x);
+                    x = myStack.Pop();
+                }
+                myStack.Push(x);
+                myStack.Push(term.ToString());
+            }
+            else if (IsLeftBracket(term))
+            {
+                EnqueueCurrentNumber();
+                myStack.Push(term.ToString());
+            }
+            else if (IsRightBracket(term))
+            {
+                EnqueueCurrentNumber();
+                string x = myStack.Pop();
+                while (!IsLeftBracket(x[0]))
                 {
-                    this.postfix.Enqueue(term);
+                    postfix.Enqueue(x);
+                    x = myStack.Pop();
                 }
             }
-            //if stack not empty, finish it here
-            while (this.myStack.Count > 0)
+            else
             {
-                string op = this.myStack.Pop();
-                this.postfix.Enqueue(op);
+                this.currentNumber += term;
             }
         }
 
-        private int precedence(string op)
+        private void EnqueueCurrentNumber()
         {
-            if (op.Equals("*") || op.Equals("/"))
+            if (this.currentNumber.Length > 0)
+            {
+                this.postfix.Enqueue(this.currentNumber);
+                this.currentNumber = string.Empty;
+            }
+        }
+
+        private static bool IsOperator(char term)
+        {
+            if (term.Equals('+')
+                || term.Equals('-')
+                || term.Equals('*')
+                || term.Equals('/')
+                || term.Equals('^')
+                || term.Equals('~'))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static bool IsLeftBracket(char term)
+        {
+            if (term.Equals('('))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static bool IsRightBracket(char term)
+        {
+            if (term.Equals(')'))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private int precedence(char op)
+        {
+            if (op.Equals('*') || op.Equals('/'))
             {
                 return 2;
-            } else if (op.Equals("+") || op.Equals("-"))
+            } else if (op.Equals('+') || op.Equals('-'))
             {
                 return 1;
-            } else if (op.Equals("^"))
+            } else if (op.Equals('^'))
+            {
+                return 4;
+            } else if (op.Equals('~'))
             {
                 return 3;
             }
@@ -72,37 +134,50 @@ namespace Calculator
         {
             double sum = 0;
             Stack<double> evalStack = new Stack<double>();
-            while (this.postfix.Count > 0)
+            postfix.Enqueue(")");
+            string term = postfix.Dequeue();
+            Console.WriteLine(term);
+            while (!IsRightBracket(term[0]))
             {
-                string term = this.postfix.Dequeue();
-                if (Calculator.isOperator(term))
+                Console.WriteLine(term);
+                if (IsOperator(term[0]))
                 {
-                    double num2 = evalStack.Pop();
-                    double num1 = evalStack.Pop();
-                    double res = this.compute(num1, num2, term);
+                    double res = compute(evalStack,term);
                     evalStack.Push(res);
-                } else
-                {
-                    evalStack.Push(Double.Parse(term));
                 }
+                else
+                {
+                    double operand = double.Parse(term);
+                    evalStack.Push(operand);
+                }
+                term = postfix.Dequeue();
             }
             return evalStack.Pop();
         }
 
-        private double compute(double num1, double num2, string op)
+        private double compute(Stack<double> evalStack, string op)
         {
-            switch(op)
+            double term1 = evalStack.Pop();
+            double term2;
+            switch (op)
             {
                 case "+":
-                    return num1 + num2;
+                    term2 = evalStack.Pop();
+                    return term2 + term1;
                 case "-":
-                    return num1 - num2;
+                    term2 = evalStack.Pop();
+                    return term2 - term1;
                 case "*":
-                    return num1 * num2;
+                    term2 = evalStack.Pop();
+                    return term2 * term1;
                 case "/":
-                    return num1 / num2;
+                    term2 = evalStack.Pop();
+                    return term2 / term1;
                 case "^":
-                    return Math.Pow(num1,num2);
+                    term2 = evalStack.Pop();
+                    return Math.Pow(term2,term1);
+                case "~":
+                    return term1 * -1;
                 default:
                     return 0;
             }

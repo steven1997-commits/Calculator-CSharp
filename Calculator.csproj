@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Postfix.cs" />
-    <Compile Include="Infix.cs" />
     <Compile Include="Calculator.cs">
       <SubType>Form</SubType>
     </Compile>

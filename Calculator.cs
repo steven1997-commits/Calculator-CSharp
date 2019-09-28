@@ -15,226 +15,158 @@ namespace Calculator
     {
 
         //newest term entered in the calculator
-        private string currTerm = "";
-        private Infix infixQueue;
         private Postfix postfixStack;
+        private bool needsReset;
 
         public Calculator()
         {
             InitializeComponent();
-            this.infixQueue = new Infix();
             this.postfixStack = new Postfix();
+            this.needsReset = false;
         }
 
-        private void addNumber(string num)
+        private void addTerm(string term)
         {
-            if (Calculator.isOperator(this.currTerm))
+            if (this.needsReset)
             {
-                this.infixQueue.push(this.currTerm);
-                this.currTerm = num;
+                return;
             }
-            else
-            {
-                if (this.currTerm.Equals("0"))
-                {
-                    this.currTerm = num;
-                    textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 1);
-                } else
-                {
-                    this.currTerm += num;
-                }
-            }
-            textBox1.Text = textBox1.Text + num;
+            textBox1.Text = textBox1.Text + term;
+        }
+
+        private void ButtonAdd_Click(object sender, EventArgs e)
+        {
+            addTerm("+");
+
         }
 
         private void Button1_Click(object sender, EventArgs e)
         {
-            this.addNumber("1");
+            addTerm("1");
         }
 
         private void Button2_Click(object sender, EventArgs e)
         {
-            this.addNumber("2");
+            addTerm("2");
         }
 
         private void Button3_Click(object sender, EventArgs e)
         {
-            this.addNumber("3");
+            addTerm("3");
         }
 
         private void Button4_Click(object sender, EventArgs e)
         {
-            this.addNumber("4");
+            addTerm("4");
         }
 
         private void Button5_Click(object sender, EventArgs e)
         {
-            this.addNumber("5");
+            addTerm("5");
         }
 
         private void Button6_Click(object sender, EventArgs e)
         {
-            this.addNumber("6");
+            addTerm("6");
         }
 
         private void Button7_Click(object sender, EventArgs e)
         {
-            this.addNumber("7");
+            addTerm("7");
         }
 
         private void Button8_Click(object sender, EventArgs e)
         {
-            this.addNumber("8");
+            addTerm("8");
         }
 
         private void Button9_Click(object sender, EventArgs e)
         {
-            this.addNumber("9");
+            addTerm("9");
         }
 
         //Zero
         private void Button11_Click(object sender, EventArgs e)
         {
-            this.addNumber("0");
-        }
-
-        public static bool isOperator(string term)
-        {
-            if (term.Equals("+") 
-                || term.Equals("-") 
-                || term.Equals("*") 
-                || term.Equals("/")
-                || term.Equals("^"))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        private void Add_Operator(string op)
-        {
-            if (Calculator.isOperator(this.currTerm))
-            {
-                this.currTerm = op;
-                textBox1.Text = 
-                    textBox1.Text.Substring(0, textBox1.Text.Length - 3) + " " + op + " ";
-            } else if (this.currTerm.Length > 0)
-            {
-                this.infixQueue.push(this.currTerm);
-                this.currTerm = op;
-                textBox1.Text += " " + op + " ";
-            }
-        }
-
-        private void ButtonAdd_Click(object sender, EventArgs e)
-        {
-            if (Calculator.isOperator(this.currTerm))
-            {
-                this.currTerm = "+";
-                textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 3) + " + ";
-            } else if (this.currTerm.Length > 0)
-            {
-                this.infixQueue.push(this.currTerm);
-                this.currTerm = "+";
-                textBox1.Text += " + ";
-            }
-            
+            addTerm("0");
         }
 
         private void ButtonSub_Click(object sender, EventArgs e)
         {
-            if (Calculator.isOperator(this.currTerm))
-            {
-                this.currTerm = "-";
-                textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 3) + " - ";
-            }
-            else if (this.currTerm.Length > 0)
-            {
-                this.infixQueue.push(this.currTerm);
-                this.currTerm = "-";
-                textBox1.Text += " - ";
-            }
+            addTerm("-");
         }
 
         private void ButtonMult_Click(object sender, EventArgs e)
         {
-            if (Calculator.isOperator(this.currTerm))
-            {
-                this.currTerm = "*";
-                textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 3) + " * ";
-            }
-            else if (this.currTerm.Length > 0)
-            {
-                this.infixQueue.push(this.currTerm);
-                this.currTerm = "*";
-                textBox1.Text += " * ";
-            }
+            addTerm("*");
         }
 
         private void ButtonDiv_Click(object sender, EventArgs e)
         {
-            if (Calculator.isOperator(this.currTerm))
-            {
-                this.currTerm = "/";
-                textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 3) + " / ";
-            }
-            else if (this.currTerm.Length > 0)
-            {
-                this.infixQueue.push(this.currTerm);
-                this.currTerm = "/";
-                textBox1.Text += " / ";
-            }
+            addTerm("/");
         }
 
         private void ButtonClear_Click(object sender, EventArgs e)
         {
             //empty all stacks, clear everything
             textBox1.Text = "";
-            this.currTerm = "";
-            this.infixQueue.empty();
             this.postfixStack.empty();
+            this.needsReset = false;
         }
 
         private void ButtonEquals_Click(object sender, EventArgs e)
         {
-            if (!Calculator.isOperator(this.currTerm))
+            if (this.needsReset)
             {
-                this.infixQueue.push(this.currTerm);
-                this.currTerm = "";
+                return;
             }
-            Debug.WriteLine("evaluating...");
-            this.postfixStack.buildFromInfix(this.infixQueue);
-            this.postfixStack.printDebug();
+            this.postfixStack.buildFromInfix(this.textBox1.Text);
             double res = 0;
             try
             {
                 res = this.postfixStack.evaluate();
-            } catch (DivideByZeroException ex)
+                textBox1.Text = res.ToString();
+            }
+            catch (DivideByZeroException ex)
             {
                 res = 0;
-            } finally
+                textBox1.Text = "Invalid Expression";
+            }
+            catch (InvalidOperationException ex)
             {
-                textBox1.Text = res.ToString();
-                this.infixQueue.empty();
-                this.postfixStack.empty();
-                this.currTerm = res.ToString();
+                res = 0;
+                textBox1.Text = "Invalid Expression";
+            }
+            catch (Exception ex)
+            {
+                textBox1.Text = "Invalid Expression";
+                Console.WriteLine(ex.StackTrace);
+            }
+            finally
+            {
+                this.needsReset = true;
             }
             
         }
 
         private void ButtonExp_Click(object sender, EventArgs e)
         {
-            Add_Operator("^");
+            addTerm("^");
         }
 
         private void ButtonLeftBracket_Click(object sender, EventArgs e)
         {
-
+            addTerm("(");
         }
 
         private void ButtonRightBracket_Click(object sender, EventArgs e)
         {
+            addTerm(")");
+        }
 
+        private void ButtonNegation_Click(object sender, EventArgs e)
+        {
+            addTerm("~");
         }
     }
 }
